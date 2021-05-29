@@ -19,9 +19,19 @@ import re
 from pip._vendor import requests
 from PIL import ImageTk, Image  
 
-class TimeAxisItem(pg.AxisItem):
-    def tickStrings(self, values, scale, spacing):
-        return [datetime.fromtimestamp(value) for value in values]
+stocksDict = {
+  "Apple (AAPL)": "AAPL",
+  "Tesla (TSLA)": "TSLA",
+  "General Motors (GM)": "GM"
+}
+
+monthDict = {
+  "May": "521",
+  "April": "421",
+  "March": "321",
+  "February" : "221",
+  "January" : "121"
+}
 
 class Window(QMainWindow):
     """Main Window."""
@@ -33,52 +43,49 @@ class Window(QMainWindow):
         self.date =  date
         self.keys = []
         self.label = QLabel(self)
+        self.label1 = QLabel(self)
         # Setting the Window Up 
         self._setWindow(False)  
-        self.subwindow = QtGui.QMdiSubWindow()
-        self.subwindow.setGeometry(300,10,700,700)
-        self.graphWidget = pg.PlotWidget()
-        self.subwindow.setWidget(self.graphWidget)
-        self.subwindow.show()
+        self.setForm()
+        
 
-    
+        # adding items to the combo box
+        
+    def setForm(self):
+        # creating a group box
+        self.formGroupBox = QGroupBox("Stocks Entry Form")
+        self.stockComboBox = QComboBox(self)
+        self.stockLabel = QLabel("Choose Stock : " ,self)
+        self.stockLabel.setGeometry(50, 10, 400, 15)
+        self.stockComboBox.setGeometry(200, 10, 400, 15)
+        self.stockComboBox.addItems(["Apple (AAPL)", "Tesla (TSLA)", "General Motors (GM)"])
+        self.monthComboBox = QComboBox(self)
+        self.monthComboBox.addItems(["May","April", "March", "February", "January"])
+        self.monthLabel = QLabel("Choose Month : " ,self)
+        self.monthLabel.setGeometry(50, 40, 400, 15)
+        self.monthComboBox.setGeometry(200, 40, 400, 15)
 
     def _setWindow(self, new_window):
         self.setWindowTitle('Stocks Visualizer')
         self.setFixedWidth(1000)
-        self.setFixedHeight(1000)
+        self.setFixedHeight(500)
         self.set_buttons()
 
-    def appl_wrapper(self):
-        print("IN APPL WRAPPER")
-        self.appl_url_generator("AAPL")
-
-    def gm_wrapper(self):
-        print("IN GM WRAPPER")
-        self.appl_url_generator("GM")
 
     def set_buttons(self):
-        self.button = QPushButton('Apple Stock', self)
-        self.button.setGeometry(60,60,100,100)
+        self.button = QPushButton('Visualize', self)
+        self.button.setGeometry(700, 20, 100, 50)
         self.button.clicked.connect(self.get_data)
-        self.button.clicked.connect(self.show_gm_graph)  
-
-        self.button = QPushButton('GM Stock', self)
-        self.button.setGeometry(160,60,100,100)
-        self.button.clicked.connect(self.gm_wrapper)
-        self.button.clicked.connect(self.show_gm_graph) 
+        self.button.clicked.connect(self.show_highlow_graph)  
 
 
-
-    def show_appl_graph(self):
-            self.label.setPixmap(QPixmap("/Users/fanniebarskhian/Documents/Python/plotappl.png"))
+    def show_highlow_graph(self):
+            self.label.setPixmap(QPixmap("/Users/fanniebarskhian/Documents/Python/plothighlow.png"))
             self.label.setScaledContents(True)
-            self.label.setGeometry(500,400,400,500)
-
-    def show_gm_graph(self):
-            self.label.setPixmap(QPixmap("/Users/fanniebarskhian/Documents/Python/plotgm.png"))
-            self.label.setScaledContents(True)
-            self.label.setGeometry(300,10,700,700)
+            self.label.setGeometry(10,100, 400, 400)
+            self.label1.setPixmap(QPixmap("/Users/fanniebarskhian/Documents/Python/plotvolume.png"))
+            self.label1.setScaledContents(True)
+            self.label1.setGeometry(450,100, 400, 400)
 
     def _createMenu(self):
         self.menu = self.menuBar().addMenu("&Stocks Menu")
@@ -98,29 +105,49 @@ class Window(QMainWindow):
 
 
 
-    def plot_gm_vals(self, dates, open, close):
+    def plot_gm_vals(self, dates, open, close, high, low):
         plt.figure(1)
-        plt.plot(dates, open, label = "Opening Cost")
-        plt.plot(dates, close, label = "Closing Cost")
-        plt.title("AAPL Open / Close Trend Chart")
-        plt.xlabel("Year - Month")
+        plt.plot(dates, high, label = monthDict[self.monthComboBox.currentText()] + " Daily High")
+        plt.title("Daily High Trend Chart")
+        plt.xlabel("Day Of Month")
         plt.ylabel("Cost (Dollars)")
         plt.legend()
-        plt.savefig("plotgm.png")
+        plt.savefig("plothighlow.png")
+        plt.figure(2)
+        plt.plot(dates, high, label = monthDict[self.monthComboBox.currentText()] + " Daily Volume")
+        plt.title("Daily Volume Trend Chart")
+        plt.xlabel("Day Of Month")
+        plt.ylabel("Amount)")
+        plt.legend()
+        plt.savefig("plotvolume.png")
         self.subwindow = QtGui.QMdiSubWindow()
         self.subwindow.setGeometry(300,10,700,700)
         self.graphWidget = pg.PlotWidget()
+        #Add gray backround
+        self.graphWidget.setBackground((255,255,255))
+        self.graphWidget.setTitle(stocksDict[self.stockComboBox.currentText()] + " Open Close Trend Line", color = (0,0,0), size = "30pt")
+        self.graphWidget.setLabel('left', 'Dollars ($)', color = (255,255,255))
+        self.graphWidget.setLabel('bottom', 'Day of Month', color = (255,255,255))
+        self.graphWidget.addLegend((0,100))
+        self.graphWidget.showGrid(x=True, y=True)
         self.subwindow.setWidget(self.graphWidget)
-        self.graphWidget.plot(x=dates, y=open)
+        pen = pg.mkPen(color = (0,0,255),width = 4)
+        pen1 = pg.mkPen(color = (255,165,0),width = 4)
+        self.graphWidget.setXRange(0, 31, padding=0)
+        self.graphWidget.plot(x=dates, y=open, name = "Opening Costs", pen = pen,symbol = '+',symbolSize = 3)
+        self.graphWidget.plot(x=dates, y=close, name = "Closing Costs", pen = pen1,symbol = '+',symbolSize = 3)
         self.subwindow.show()
 
     def get_data(self):
+        sheetname = stocksDict[self.stockComboBox.currentText()] + monthDict[self.monthComboBox.currentText()]
         data = Calculations()
-        data.trigger_data("AAPL", "21")
-        appl_open = data.get_open()
-        appl_dates = data.get_dates()
-        appl_close = data.get_close()
-        self.plot_gm_vals(appl_dates, appl_open, appl_close)
+        data.trigger_data(sheetname)
+        open = data.get_open()
+        dates = data.get_dates()
+        close = data.get_close()
+        high = data.get_high()
+        low = data.get_low()
+        self.plot_gm_vals(dates, open, close, high, low)
 
 
 if __name__ == '__main__':

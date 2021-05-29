@@ -7,14 +7,19 @@ class Calculations(object):
         self.open = []
         self.close = []
         self.dates = []
+        self.high =[]
+        self.low = []
+        self.volume = []
 
-    def trigger_data(self, stockName, stockYear): 
-        sheet_name = stockName + "421"
-        sheet = pd.read_excel("stocks.xlsx", sheet_name = sheet_name)
+    def trigger_data(self, sheetName): 
+        sheetName = sheetName
+        sheet = pd.read_excel("stocks.xlsx", sheet_name = sheetName)
         self.open = sheet.open.values
         self.close = sheet.close.values
         self.dates = sheet.date.values
-        print("DATA EXTRACTION PROCESSED")
+        self.high = sheet.high.values
+        self.low = sheet.low.values
+        self.volume= sheet.volume.values
 
     def get_open(self):
         return self.open
@@ -23,10 +28,16 @@ class Calculations(object):
         return self.close
 
     def get_dates(self):
-        print(self.dates)
         return self.dates
 
+    def get_low(self):
+        return self.low
 
+    def get_high(self):
+        return self.high
+
+    def get_volume(self):
+        return self.volume
 
 
 if __name__ == '__main__':

@@ -5,7 +5,7 @@ from datetime import  datetime
 
 url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v3/get-historical-data"
 
-querystring = {"symbol":"GM","region":"US"}
+querystring = {"symbol":"GLD","region":"US"}
 
 headers = {
     'x-rapidapi-key': "7dc35e8588mshee200a9fe44d126p15ff82jsn66898b126811",
@@ -24,7 +24,7 @@ for index in np.arange(len(json_data["prices"])):
 import csv
 csv_columns = ['date','open','high', 'low', 'close', 'volume', 'adjclose']
 
-csv_file = "gmstock.csv"
+csv_file = "gldstock.csv"
 try:
     with open(csv_file, 'w') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
