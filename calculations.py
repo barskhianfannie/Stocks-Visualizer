@@ -10,6 +10,7 @@ class Calculations(object):
         self.high =[]
         self.low = []
         self.volume = []
+        self.adjclose = []
 
     def trigger_data(self, sheetName): 
         sheetName = sheetName
@@ -20,6 +21,7 @@ class Calculations(object):
         self.high = sheet.high.values
         self.low = sheet.low.values
         self.volume= sheet.volume.values
+        self.adjclose = sheet.adjclose.values
 
     def get_open(self):
         return self.open
@@ -38,6 +40,9 @@ class Calculations(object):
 
     def get_volume(self):
         return self.volume
+
+    def get_adj(self):
+        return self.adjclose
 
 
 if __name__ == '__main__':
