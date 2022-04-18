@@ -1,6 +1,6 @@
 import sys
 sys.path.append('/Users/fanniebarskhian/Documents/Python/calculations.py')
-from calculations import Calculations
+from src.calculations import Calculations
 
 
 from PyQt5.QtWidgets import *
